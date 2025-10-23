@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Experiência: Nitrito vs Nitrato (Animação)</title>
+    <!-- Carrega o Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Estilos personalizados para os tubos de ensaio e líquidos */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .test-tube {
+            width: 80px;
+            height: 250px;
+            border: 3px solid #94a3b8; /* slate-400 */
+            border-top: none;
+            border-bottom-left-radius: 40px;
+            border-bottom-right-radius: 40px;
+            position: relative;
+            background-color: #f1f5f9; /* slate-100 */
+            overflow: hidden;
+            margin: 0 auto;
+        }
+        .liquid {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 60%; /* Nível inicial do líquido */
+            background-color: #bae6fd; /* sky-200 (cor de amostra clara) */
+            border-bottom-left-radius: 35px;
+            border-bottom-right-radius: 35px;
+            transition: background-color 1s ease, height 0.5s ease;
+        }
+        
+        /* Cor da reação positiva (rosa/magenta) */
+        .liquid.positive {
+            background-color: #ec4899; /* pink-500 */
+        }
+
+        /* Efeito de "gotejamento" ou adição */
+        .drop {
+            width: 15px;
+            height: 15px;
+            background-color: #a78bfa; /* violet-400 */
+            border-radius: 50%;
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: drop 0.5s ease-in forwards;
+            opacity: 0;
+        }
+
+        @keyframes drop {
+            0% { top: -20px; opacity: 1; }
+            100% { top: 60%; opacity: 0; }
+        }
+
+        /* Efeito de "pó" (redutor) */
+        .powder {
+            width: 5px;
+            height: 5px;
+            background-color: #64748b; /* slate-500 */
+            border-radius: 50%;
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: drop 0.7s ease-in forwards;
+            opacity: 0;
+            box-shadow: 5px 5px 0 #64748b, -5px 10px 0 #64748b;
+        }
+
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+
+    <div class="w-full max-w-4xl bg-white p-6 md:p-8 rounded-2xl shadow-2xl">
+        
+        <header class="text-center mb-6">
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-800">Experiência: Diferenciando Nitrito (NO₂⁻) e Nitrato (NO₃⁻)</h1>
+            <p class="text-gray-600 mt-2">Assista à demonstração animada do Teste de Griess.</p>
+        </header>
+
+        <!-- Bancada do Laboratório -->
+        <div class="flex flex-col md:flex-row justify-around items-center gap-8 mb-6">
+            
+            <!-- Tubo 1: Nitrito -->
+            <div class="text-center">
+                <div class="test-tube" id="tube-1-container">
+                    <div class="liquid" id="liquid-1"></div>
+                    <!-- Animação de gota/pó aparecerá aqui -->
+                </div>
+                <label class="block font-semibold mt-3 text-gray-700">Tubo 1</label>
+                <span class="text-sm text-blue-600 font-medium">Amostra com Nitrito (NO₂⁻)</span>
+            </div>
+
+            <!-- Tubo 2: Nitrato -->
+            <div class="text-center">
+                <div class="test-tube" id="tube-2-container">
+                    <div class="liquid" id="liquid-2"></div>
+                    <!-- Animação de gota/pó aparecerá aqui -->
+                </div>
+                <label class="block font-semibold mt-3 text-gray-700">Tubo 2</label>
+                <span class="text-sm text-green-600 font-medium">Amostra com Nitrato (NO₃⁻)</span>
+            </div>
+        </div>
+
+        <!-- Painel de Controle (Reagentes) -->
+        <div class="border-t pt-6">
+            <h2 class="text-xl font-semibold text-center mb-4 text-gray-700">Demonstração</h2>
+            <!-- Botões de ação removidos, apenas o de reiniciar -->
+            <div class="flex justify-center gap-3">
+                <button id="reset" class="w-full sm:w-auto bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-lg shadow-md transition-all duration-300 ease-in-out transform hover:scale-105">
+                    Assistir Novamente
+                </button>
+            </div>
+        </div>
+
+        <!-- Caixa de Explicação -->
+        <div id="explanation-box" class="mt-6 p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded-r-lg min-h-[100px] flex items-center justify-center">
+            <p id="explanation-text" class="text-yellow-800 text-center">A demonstração começará em breve...</p>
+        </div>
+
+    </div>
+
+    <script>
+        // Referências aos elementos do DOM
+        const liquid1 = document.getElementById('liquid-1');
+        const liquid2 = document.getElementById('liquid-2');
+        const tube1Container = document.getElementById('tube-1-container');
+        const tube2Container = document.getElementById('tube-2-container');
+        
+        const btnReset = document.getElementById('reset');
+        
+        const explanationText = document.getElementById('explanation-text');
+        const explanationBox = document.getElementById('explanation-box');
+
+        // Função para criar a animação de gota
+        function playDropAnimation(container) {
+            const drop = document.createElement('div');
+            drop.className = 'drop';
+            container.appendChild(drop);
+            setTimeout(() => {
+                // Remove a gota após a animação
+                if (drop.parentNode === container) {
+                    container.removeChild(drop);
+                }
+            }, 500);
+        }
+
+        // Função para criar a animação de pó
+        function playPowderAnimation(container) {
+            const powder = document.createElement('div');
+            powder.className = 'powder';
+            container.appendChild(powder);
+            setTimeout(() => {
+                // Remove o pó após a animação
+                if (powder.parentNode === container) {
+                    container.removeChild(powder);
+                }
+            }, 700);
+        }
+
+        // Função para atualizar a explicação
+        function setExplanation(text, type = 'info') {
+            explanationText.textContent = text;
+            // Limpa classes de cor anteriores
+            explanationBox.className = 'mt-6 p-4 border-l-4 rounded-r-lg min-h-[100px] flex items-center justify-center transition-all duration-500';
+            explanationText.className = 'text-center'; // Reseta classe de texto
+
+            if (type === 'success') {
+                explanationBox.classList.add('bg-green-50', 'border-green-400');
+                explanationText.classList.add('text-green-800');
+            } else if (type === 'reaction') {
+                explanationBox.classList.add('bg-pink-50', 'border-pink-400');
+                explanationText.classList.add('text-pink-800');
+            } else { // 'info'
+                explanationBox.classList.add('bg-yellow-50', 'border-yellow-400');
+                explanationText.classList.add('text-yellow-800');
+            }
+        }
+
+        // Função principal da simulação automática
+        function runSimulation() {
+            // 0. Reseta o estado inicial
+            liquid1.classList.remove('positive');
+            liquid2.classList.remove('positive');
+            setExplanation('Iniciando a simulação... Passo 1: Adicionando Reagente Griess.', 'info');
+            btnReset.disabled = true; // Desabilita o botão durante a animação
+
+            // 1. Adicionar Griess (Animação)
+            setTimeout(() => {
+                playDropAnimation(tube1Container);
+                playDropAnimation(tube2Container);
+            }, 1000); // 1s de espera inicial
+
+            // 2. Reação do Tubo 1 (após animação da gota)
+            setTimeout(() => {
+                liquid1.classList.add('positive'); // Nitrito reage
+                setExplanation('O Tubo 1 (Nitrito) reage e fica rosa. O Tubo 2 (Nitrato) não reage.', 'reaction');
+            }, 2000); // 1s após a gota começar
+
+            // 3. Adicionar Redutor (Animação) (após a primeira reação)
+            setTimeout(() => {
+                setExplanation('Passo 2: Adicionando o redutor (Zinco) ao Tubo 2 para converter Nitrato...', 'info');
+                playPowderAnimation(tube2Container);
+            }, 4500); // 2.5s após a reação 1
+
+            // 4. Reação do Tubo 2 (após animação do pó e tempo de redução)
+            setTimeout(() => {
+                liquid2.classList.add('positive'); // Nitrato reduzido reage
+                setExplanation('Sucesso! O Nitrato foi reduzido a Nitrito e reagiu. Ambos os tubos estão rosas.', 'success');
+                btnReset.disabled = false; // Habilita o botão de reset
+            }, 6500); // 2s após a adição do redutor
+        }
+
+        // Event listener para o botão de "Assistir Novamente"
+        btnReset.addEventListener('click', () => {
+            runSimulation();
+        });
+
+        // Inicia a simulação automaticamente quando a página carrega
+        window.onload = runSimulation;
+
+    </script>
+</body>
+</html>
+
